@@ -161,7 +161,7 @@ CREATE TABLE tasks (
     INDEX idx_household_status (household_id, status),
     INDEX idx_due_date (due_date),
     INDEX idx_status (status),
-    INDEX idx_created_by (created_by_user_id),
+    INDEX idx_created_by (created_by_user_id)
     -- Constraint: due_date and recurrence_rule should not both be NULL (at least one should be set)
     -- This is handled at application level
     -- Note: CHECK constraints require MySQL 8.0.16+. If you have an older version, comment out the next 3 lines
@@ -208,7 +208,7 @@ CREATE TABLE task_completions (
     INDEX idx_task_id (task_id),
     INDEX idx_completed_by (completed_by_user_id),
     INDEX idx_verification_status (verification_status),
-    INDEX idx_completed_at (completed_at),
+    INDEX idx_completed_at (completed_at)
     -- Constraint: verifier should not be the same as completer (enforced at app level)
     -- Note: CHECK constraints require MySQL 8.0.16+. If you have an older version, comment out the next 3 lines
     -- CONSTRAINT chk_verifier_different CHECK (
