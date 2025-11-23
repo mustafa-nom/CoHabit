@@ -3,6 +3,10 @@ database/config.js
 database/config.py
 database/.env
 
+# Backend Configuration (contains DB passwords and JWT secrets)
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
+
 # Environment Variables
 .env
 .env.local
