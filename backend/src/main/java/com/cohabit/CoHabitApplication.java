@@ -1,0 +1,12 @@
+package com.cohabit;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class CoHabitApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(CoHabitApplication.class, args);
+    }
+}
+
