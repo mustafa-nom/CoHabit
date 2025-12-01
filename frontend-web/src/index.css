@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  /* Dark theme colors matching mobile design */
+  --color-background: #0f1419;
+  --color-background-secondary: #1a1f28;
+  --color-foreground: #ffffff;
+  --color-foreground-muted: #9ca3af;
+
+  /* Mint/green accent colors */
+  --color-mint: #7fe7cc;
+  --color-mint-light: #9feedd;
+  --color-mint-dark: #5fd4b8;
+
+  /* Border colors */
+  --color-border: #7fe7cc;
+  --color-border-muted: #2d3748;
+
+  /* Primary color (same as mint) */
+  --color-primary: #7fe7cc;
+  --color-primary-foreground: #0f1419;
+
+  /* Border radius */
+  --radius-lg: 1rem;
+  --radius-md: 0.75rem;
+  --radius-sm: 0.5rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
