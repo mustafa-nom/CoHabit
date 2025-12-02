@@ -12,14 +12,12 @@ import { toast } from "sonner"
 
 export const ProfilePage = () => {
   const navigate = useNavigate()
-  const [view, setView] = useState('main') // main, changeName, changeUsername, changeEmail, changePassword
+  const [view, setView] = useState('main') // main, changeName, changeUsername, changePassword
   const [formData, setFormData] = useState({
     newDisplayName: '',
     verifyDisplayName: '',
     newUsername: '',
     verifyUsername: '',
-    newEmail: '',
-    verifyEmail: '',
     newPassword: '',
     verifyPassword: '',
   })
@@ -131,49 +129,6 @@ export const ProfilePage = () => {
     )
   }
 
-  if (view === 'changeEmail') {
-    return (
-      <Container>
-        <div className="space-y-6">
-          <button onClick={() => setView('main')} className="text-mint flex items-center gap-2">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-3xl font-bold text-mint">Profile Page</h1>
-
-          <div className="space-y-4 max-w-md">
-            <div className="space-y-2">
-              <Label htmlFor="newEmail">New Email:</Label>
-              <Input
-                id="newEmail"
-                name="newEmail"
-                type="email"
-                value={formData.newEmail}
-                onChange={handleChange}
-                placeholder="Enter new email"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="verifyEmail">Verify Email:</Label>
-              <Input
-                id="verifyEmail"
-                name="verifyEmail"
-                type="email"
-                value={formData.verifyEmail}
-                onChange={handleChange}
-                placeholder="Verify email"
-              />
-            </div>
-
-            <Button onClick={handleConfirm} className="w-full">
-              Confirm
-            </Button>
-          </div>
-        </div>
-      </Container>
-    )
-  }
-
   if (view === 'changePassword') {
     return (
       <Container>
@@ -238,9 +193,6 @@ export const ProfilePage = () => {
             </Button>
             <Button variant="outline" className="w-full" onClick={() => setView('changeUsername')}>
               Change Username
-            </Button>
-            <Button variant="outline" className="w-full" onClick={() => setView('changeEmail')}>
-              Change Email
             </Button>
             <Button variant="outline" className="w-full" onClick={() => setView('changePassword')}>
               Change Password

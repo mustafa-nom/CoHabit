@@ -13,11 +13,9 @@ export const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
     displayName: '',
-    fname: '',
-    lname: '',
   })
 
   const handleSubmit = async (e) => {
@@ -26,15 +24,13 @@ export const LoginPage = () => {
 
     try {
       if (isLogin) {
-        await authService.login(formData.email, formData.password)
+        await authService.login(formData.username, formData.password)
         toast.success('Login successful!')
       } else {
         await authService.register({
-          email: formData.email,
+          username: formData.username,
           password: formData.password,
-          displayName: formData.displayName || formData.fname,
-          fname: formData.fname,
-          lname: formData.lname,
+          displayName: formData.displayName,
         })
         toast.success('Account created successfully!')
       }
@@ -82,58 +78,32 @@ export const LoginPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="fname">First Name</Label>
-                  <Input
-                    id="fname"
-                    name="fname"
-                    type="text"
-                    required={!isLogin}
-                    value={formData.fname}
-                    onChange={handleChange}
-                    placeholder="John"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lname">Last Name</Label>
-                  <Input
-                    id="lname"
-                    name="lname"
-                    type="text"
-                    required={!isLogin}
-                    value={formData.lname}
-                    onChange={handleChange}
-                    placeholder="Doe"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="displayName">Display Name</Label>
-                  <Input
-                    id="displayName"
-                    name="displayName"
-                    type="text"
-                    value={formData.displayName}
-                    onChange={handleChange}
-                    placeholder="JohnD (optional)"
-                  />
-                </div>
-              </>
-            )}
-
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
+                id="username"
+                name="username"
+                type="text"
                 required
-                value={formData.email}
+                value={formData.username}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder="johndoe"
               />
             </div>
+
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="displayName">Display Name</Label>
+                <Input
+                  id="displayName"
+                  name="displayName"
+                  type="text"
+                  value={formData.displayName}
+                  onChange={handleChange}
+                  placeholder="John Doe (optional)"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
