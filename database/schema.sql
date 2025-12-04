@@ -25,7 +25,6 @@ DROP TABLE IF EXISTS users;
 -- ============================================
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
     username VARCHAR(100) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(100),
@@ -35,7 +34,6 @@ CREATE TABLE users (
     level INT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_email (email),
     INDEX idx_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -75,7 +73,6 @@ CREATE TABLE verification_codes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT,
     code VARCHAR(10) NOT NULL,
-    contact_info VARCHAR(255) NOT NULL, -- email or phone
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
     is_used BOOLEAN DEFAULT FALSE,
