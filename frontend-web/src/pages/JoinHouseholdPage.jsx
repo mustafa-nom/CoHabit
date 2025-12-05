@@ -74,6 +74,25 @@ export const JoinHouseholdPage = () => {
   // Request Sent Success Screen
   if (requestSent) {
     return (
+      <>
+    <header className="border-b border-mint bg-background-secondary">
+          <div className="flex container mx-auto px-4">
+              <div className="w-1/18 flex h-16 items-center justify-center-safe">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> CoHabit </div>
+              </div>
+              <div className="w-17/20 flex h-16 items-center justify-around">
+                  <Link to="/household">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> Households </div>
+                  </Link>
+                  <Link to="/tasks">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Tasks </div>
+                  </Link>
+                  <Link to="/profile">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Profile </div>
+                  </Link>
+              </div>
+          </div>
+      </header>
       <Container>
         <div className="min-h-[70vh] flex flex-col items-center justify-center">
           <Card className="p-8 bg-background-secondary border-mint/30 text-center max-w-md w-full">
@@ -102,12 +121,32 @@ export const JoinHouseholdPage = () => {
           </Card>
         </div>
       </Container>
+      </>
     )
   }
 
   // Found Household Preview Screen
   if (foundHousehold) {
     return (
+      <>
+    <header className="border-b border-mint bg-background-secondary">
+          <div className="flex container mx-auto px-4">
+              <div className="w-1/18 flex h-16 items-center justify-center-safe">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> CoHabit </div>
+              </div>
+              <div className="w-17/20 flex h-16 items-center justify-around">
+                  <Link to="/household">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> Households </div>
+                  </Link>
+                  <Link to="/tasks">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Tasks </div>
+                  </Link>
+                  <Link to="/profile">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Profile </div>
+                  </Link>
+              </div>
+          </div>
+      </header>
       <Container>
         <div className="space-y-6 pb-24">
           {/* Header */}
@@ -174,11 +213,31 @@ export const JoinHouseholdPage = () => {
           </Card>
         </div>
       </Container>
+      </>
     )
   }
 
   // Search Form Screen
   return (
+    <>
+    <header className="border-b border-mint bg-background-secondary">
+          <div className="flex container mx-auto px-4">
+              <div className="w-1/18 flex h-16 items-center justify-center-safe">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> CoHabit </div>
+              </div>
+              <div className="w-17/20 flex h-16 items-center justify-around">
+                  <Link to="/household">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> Households </div>
+                  </Link>
+                  <Link to="/tasks">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Tasks </div>
+                  </Link>
+                  <Link to="/profile">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Profile </div>
+                  </Link>
+              </div>
+          </div>
+      </header>
     <Container>
       <div className="space-y-6 pb-24">
         {/* Header */}
@@ -247,5 +306,6 @@ export const JoinHouseholdPage = () => {
         </Card>
       </div>
     </Container>
+    </>
   )
 }

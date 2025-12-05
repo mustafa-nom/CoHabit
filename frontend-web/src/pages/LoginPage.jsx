@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { authService } from "@/services/auth"
 import { Menu } from "lucide-react"
+import { Link } from "react-router-dom"
 
 export const LoginPage = () => {
   const navigate = useNavigate()
@@ -58,7 +59,6 @@ export const LoginPage = () => {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center">
             <div className="text-2xl font-bold text-mint flex items-center gap-2">
-              <Menu className="h-6 w-6" />
               CoHabit
             </div>
           </div>

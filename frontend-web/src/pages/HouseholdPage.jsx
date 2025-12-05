@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { householdService } from "@/services/household"
+import { Link } from "react-router-dom"
 
 export const HouseholdPage = () => {
   const navigate = useNavigate()
@@ -100,6 +101,25 @@ export const HouseholdPage = () => {
   }
 
   return (
+    <>
+    <header className="border-b border-mint bg-background-secondary">
+          <div className="flex container mx-auto px-4">
+              <div className="w-1/18 flex h-16 items-center justify-center-safe">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> CoHabit </div>
+              </div>
+              <div className="w-17/20 flex h-16 items-center justify-around">
+                  <Link to="/household">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> Households </div>
+                  </Link>
+                  <Link to="/tasks">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Tasks </div>
+                  </Link>
+                  <Link to="/profile">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Profile </div>
+                  </Link>
+              </div>
+          </div>
+      </header>
     <Container>
       <div className="space-y-6 pb-24">
         <h1 className="text-3xl font-bold text-mint">Household</h1>
@@ -297,5 +317,6 @@ export const HouseholdPage = () => {
         )}
       </div>
     </Container>
+    </>
   )
 }

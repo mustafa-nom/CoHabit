@@ -3,7 +3,6 @@ import { Toaster } from "sonner"
 import { Header, BottomNav } from "@/components/layout/Header"
 import { HomePage } from "@/pages/HomePage"
 import { TasksPage } from "@/pages/TasksPage"
-import { LeaderboardPage } from "@/pages/LeaderboardPage"
 import { HouseholdPage } from "@/pages/HouseholdPage"
 import { CreateHouseholdPage } from "@/pages/CreateHouseholdPage"
 import { JoinHouseholdPage } from "@/pages/JoinHouseholdPage"
@@ -17,7 +16,13 @@ function App() {
       <div className="min-h-screen bg-background text-foreground">
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path ="/login" element={<LoginPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/household" element={<HouseholdPage />} />
+          <Route path="/household/create" element={<CreateHouseholdPage />} />
+          <Route path="/household/join" element={<JoinHouseholdPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
           {/* Protected routes with layout */}
           <Route
@@ -30,7 +35,6 @@ function App() {
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/tasks" element={<TasksPage />} />
-                      <Route path="/leaderboard" element={<LeaderboardPage />} />
                       <Route path="/household" element={<HouseholdPage />} />
                       <Route path="/household/create" element={<CreateHouseholdPage />} />
                       <Route path="/household/join" element={<JoinHouseholdPage />} />
