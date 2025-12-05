@@ -17,6 +17,8 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/household" element={<HouseholdPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
 
           {/* Protected routes with layout */}
           <Route

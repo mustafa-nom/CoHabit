@@ -189,7 +189,7 @@ export const ProfilePage = () => {
                     <div className="text-2xl font-bold text-white flex items-center gap-2"> Tasks </div>
                   </Link>
                   <Link to="/profile">
-                    <div className="text-2xl font-bold text-mint flex items-center gap-2 justify-center"> Profile </div>
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> Profile </div>
                   </Link>
               </div>
           </div>
