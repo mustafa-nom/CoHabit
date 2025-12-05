@@ -49,7 +49,7 @@ export const ProfilePage = () => {
         } else {
           setUser(prevUser => ({
             ...prevUser,
-            displayName: response.data.displayname,
+            displayName: response.data.displayName,
             username: response.data.username
           }))
         }
