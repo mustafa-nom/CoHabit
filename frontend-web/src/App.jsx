@@ -3,7 +3,10 @@ import { Toaster } from "sonner"
 import { Header, BottomNav } from "@/components/layout/Header"
 import { HomePage } from "@/pages/HomePage"
 import { TasksPage } from "@/pages/TasksPage"
+import { LeaderboardPage } from "@/pages/LeaderboardPage"
 import { HouseholdPage } from "@/pages/HouseholdPage"
+import { CreateHouseholdPage } from "@/pages/CreateHouseholdPage"
+import { JoinHouseholdPage } from "@/pages/JoinHouseholdPage"
 import { ProfilePage } from "@/pages/ProfilePage"
 import { LoginPage } from "@/pages/LoginPage"
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
@@ -15,9 +18,6 @@ function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/household" element={<HouseholdPage />} />
-          <Route path="/tasks" element={<TasksPage />} />
 
           {/* Protected routes with layout */}
           <Route
@@ -30,7 +30,10 @@ function App() {
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/tasks" element={<TasksPage />} />
+                      <Route path="/leaderboard" element={<LeaderboardPage />} />
                       <Route path="/household" element={<HouseholdPage />} />
+                      <Route path="/household/create" element={<CreateHouseholdPage />} />
+                      <Route path="/household/join" element={<JoinHouseholdPage />} />
                       <Route path="/profile" element={<ProfilePage />} />
                     </Routes>
                   </main>

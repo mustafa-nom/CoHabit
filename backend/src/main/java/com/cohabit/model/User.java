@@ -18,9 +18,6 @@ public class User {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String email;
-
-    @Column(unique = true)
     private String username;
 
     @Column(name = "password_hash", nullable = false)
@@ -28,12 +25,6 @@ public class User {
 
     @Column(name = "display_name")
     private String displayName;
-
-    private String fname;
-    private String lname;
-
-    @Column(name = "email_verified")
-    private Boolean emailVerified = false;
 
     @Column(name = "total_xp")
     private Integer totalXp = 0;
@@ -57,4 +48,3 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 }
-

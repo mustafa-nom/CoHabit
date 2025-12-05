@@ -14,26 +14,35 @@ public class JwtUtil {
     @Value("${jwt.secret:cohabitSecretKeyForJWTTokenGenerationAndValidationPleaseChangeThisInProductionToAMoreSecureValue}")
     private String secretKeyString;
 
-    @Value("${jwt.expiration:86400000}") // 24 hours in milliseconds
+    @Value("${jwt.expiration:86400000}") // 24 hours
     private Long jwtExpiration;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKeyString.getBytes());
     }
 
-    public String generateToken(Long userId, String email) {
+    // ------------------------------
+    // Generate Token
+    // ------------------------------
+    // FIX: Updated signature to accept (Long userId, String username) to match AuthService
+    public String generateToken(Long userId, String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
-                .subject(userId.toString())
-                .claim("email", email)
+                // We keep userId as the Subject so extractUserId() continues to work
+                .subject(userId.toString()) 
+                // We add username as a generic claim
+                .claim("username", username) 
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    // ------------------------------
+    // Existing Methods
+    // ------------------------------
     public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -42,16 +51,6 @@ public class JwtUtil {
                 .getPayload();
 
         return Long.parseLong(claims.getSubject());
-    }
-
-    public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.get("email", String.class);
     }
 
     public boolean validateToken(String token) {
@@ -83,5 +82,18 @@ public class JwtUtil {
         } catch (JwtException e) {
             return true;
         }
+    }
+
+    // ------------------------------
+    // New Method You Needed
+    // ------------------------------
+    public Long extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return Long.parseLong(claims.getSubject());
     }
 }

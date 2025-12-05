@@ -29,9 +29,10 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User retrieved successfully", user));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<ApiResponse<User>> getUserByEmail(@PathVariable String email) {
-        User user = userService.getUserByEmail(email);
+    @GetMapping("/username/{username}")
+    public ResponseEntity<ApiResponse<User>> getUserByUsername(@PathVariable String username) {
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
         return ResponseEntity.ok(ApiResponse.success("User retrieved successfully", user));
     }
 
@@ -54,4 +55,3 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully"));
     }
 }
-

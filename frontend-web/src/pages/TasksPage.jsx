@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Calendar, RotateCcw } from "lucide-react"
 import { cn } from "@/utils/cn"
-import { Link } from "react-router-dom"
 
 export const TasksPage = () => {
   const [tasks, setTasks] = useState([
@@ -31,25 +30,6 @@ export const TasksPage = () => {
   const tomorrowTasks = tasks.filter(t => t.category === "Tomorrow")
 
   return (
-    <>
-    <header className="border-b border-mint bg-background-secondary">
-          <div className="flex container mx-auto px-4">
-              <div className="w-1/18 flex h-16 items-center justify-center-safe">
-                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> CoHabit </div>
-              </div>
-              <div className="w-17/20 flex h-16 items-center justify-around">
-                  <Link to="/household">
-                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Households </div>
-                  </Link>
-                  <Link to="/tasks">
-                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> Tasks </div>
-                  </Link>
-                  <Link to="/profile">
-                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Profile </div>
-                  </Link>
-              </div>
-          </div>
-      </header>
     <Container>
       <div className="space-y-6">
         {/* Header */}
@@ -169,6 +149,5 @@ export const TasksPage = () => {
         </div>
       </div>
     </Container>
-    </>
   )
 }

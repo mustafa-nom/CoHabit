@@ -24,9 +24,6 @@ public class AuthService {
     private UserService userService;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -38,34 +35,24 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         User user = new User();
-        user.setEmail(request.getEmail());
         user.setUsername(request.getUsername());
-        user.setPasswordHash(request.getPassword()); // Will be hashed in UserService
+        user.setPasswordHash(request.getPassword());
         user.setDisplayName(request.getDisplayName());
-        user.setFname(request.getFname());
-        user.setLname(request.getLname());
-        user.setEmailVerified(false);
         user.setTotalXp(0);
         user.setLevel(1);
 
         User savedUser = userService.createUser(user);
 
-        // Log registration
-        logAuthAttempt(savedUser, AuthLog.AttemptType.REGISTER, httpRequest);
+        logAuthAttempt(savedUser, AuthLog.AttemptType.REGISTER);
 
-        // Send welcome email (mock)
-        emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getDisplayName());
+        String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getUsername());
 
-        // Generate JWT token
-        String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getEmail());
-
-        return new AuthResponse(token, savedUser.getId(), savedUser.getEmail(),
-                savedUser.getUsername(), savedUser.getDisplayName());
+        return new AuthResponse(token, savedUser.getId(), savedUser.getUsername(), savedUser.getDisplayName());
     }
 
     @Transactional
     public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
-        Optional<User> userOpt = userService.findByEmailOrUsername(request.getEmailOrUsername());
+        Optional<User> userOpt = userService.findByUsername(request.getUsername());
 
         if (userOpt.isEmpty()) {
             throw new UserNotFoundException("User not found");
@@ -74,44 +61,27 @@ public class AuthService {
         User user = userOpt.get();
 
         if (!userService.validatePassword(user, request.getPassword())) {
-            // Log failed login
-            logAuthAttempt(user, AuthLog.AttemptType.FAILED_LOGIN, httpRequest);
+            logAuthAttempt(user, AuthLog.AttemptType.FAILED_LOGIN);
             throw new InvalidCredentialsException("Invalid password");
         }
 
-        // Log successful login
-        logAuthAttempt(user, AuthLog.AttemptType.LOGIN, httpRequest);
+        logAuthAttempt(user, AuthLog.AttemptType.LOGIN);
 
-        // Generate JWT token
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername());
 
-        return new AuthResponse(token, user.getId(), user.getEmail(),
-                user.getUsername(), user.getDisplayName());
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getDisplayName());
     }
 
     @Transactional
     public void logout(Long userId, HttpServletRequest httpRequest) {
         User user = userService.getUserById(userId);
-        logAuthAttempt(user, AuthLog.AttemptType.LOGOUT, httpRequest);
+        logAuthAttempt(user, AuthLog.AttemptType.LOGOUT);
     }
 
-    private void logAuthAttempt(User user, AuthLog.AttemptType attemptType, HttpServletRequest request) {
+    private void logAuthAttempt(User user, AuthLog.AttemptType attemptType) {
         AuthLog log = new AuthLog();
         log.setUser(user);
         log.setAttemptType(attemptType);
-        log.setIpAddress(getClientIp(request));
-        log.setUserAgent(request.getHeader("User-Agent"));
         authLogRepository.save(log);
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
     }
 }

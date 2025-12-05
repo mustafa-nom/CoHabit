@@ -25,12 +25,6 @@ public class AuthLog {
     @Column(name = "attempt_type", nullable = false)
     private AttemptType attemptType;
 
-    @Column(name = "ip_address")
-    private String ipAddress;
-
-    @Column(name = "user_agent")
-    private String userAgent;
-
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
