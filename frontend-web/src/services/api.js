@@ -51,12 +51,12 @@ export const userService = {
     const response = await api.get('/users');
     return response.data;
   },
-  getUserById: async (id) => {
-    const response = await api.get(`/users/${id}`);
+  getCurrentUser: async () => {
+    const response = await api.get('/users/current');
     return response.data;
   },
-  getUserByEmail: async (email) => {
-    const response = await api.get(`/users/email/${email}`);
+  getUserById: async (id) => {
+    const response = await api.get(`/users/${id}`);
     return response.data;
   },
   createUser: async (userData) => {

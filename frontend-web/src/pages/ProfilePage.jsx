@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Container } from "@/components/layout/Container"
 import { Button } from "@/components/ui/button"
@@ -10,10 +10,13 @@ import { authService } from "@/services/auth"
 import { ChevronLeft } from "lucide-react"
 import { toast } from "sonner"
 import { Link } from "react-router-dom"
+import { userService } from "@/services/api"
+import { Spinner } from "@/components/ui/spinner"
 
 export const ProfilePage = () => {
   const navigate = useNavigate()
   const [view, setView] = useState('main') // main, changeName, changeUsername, changePassword
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
     newDisplayName: '',
     verifyDisplayName: '',
@@ -23,10 +26,49 @@ export const ProfilePage = () => {
     verifyPassword: '',
   })
 
-  // Mock user data - replace with actual user data
-  const user = {
-    displayName: "John Doe",
-    username: "johndoe123"
+  useEffect(() => {
+      fetchUser()
+  }, [])
+
+  const [user, setUser] = useState({
+    displayName: "",
+    username: ""
+  })
+
+  const fetchUser = async () => {
+    try {
+      setLoading(true)
+      const response = await userService.getCurrentUser()
+      if (response.success && response.data) {
+        if (response.data.displayName === "") {
+          setUser(prevUser => ({
+            ...prevUser,
+            displayName: response.data.username,
+            username: response.data.username
+          }))
+        } else {
+          setUser(prevUser => ({
+            ...prevUser,
+            displayName: response.data.displayname,
+            username: response.data.username
+          }))
+        }
+      } else {
+        setUser(prevUser => ({
+          ...prevUser,
+          displayName: "No",
+          username: "johndoe123"
+        }))
+      }
+    } catch (error) {
+      setUser(prevUser => ({
+        ...prevUser,
+        displayName: "Error",
+        username: "johndoe123"
+      }))
+    } finally {
+        setLoading(false)
+    }
   }
 
   const handleLogout = async () => {
@@ -36,6 +78,7 @@ export const ProfilePage = () => {
   }
 
   const handleChange = (e) => {
+    console.log(e.target.name + " changed to " + e.target.value);
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -46,6 +89,16 @@ export const ProfilePage = () => {
     // Add validation and API calls here
     toast.success('Changes saved successfully!')
     setView('main')
+  }
+
+  if (loading) {
+    return (
+      <Container>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Spinner size="lg" />
+        </div>
+      </Container>
+    )
   }
 
   if (view === 'changeName') {
