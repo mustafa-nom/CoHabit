@@ -31,7 +31,6 @@ function App() {
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/tasks" element={<TasksPage />} />
-                      <Route path="/leaderboard" element={<LeaderboardPage />} />
                       <Route path="/household" element={<HouseholdPage />} />
                       <Route path="/profile" element={<ProfilePage />} />
                     </Routes>
