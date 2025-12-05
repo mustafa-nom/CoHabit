@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { householdService } from "@/services/household"
+import { Link } from "react-router-dom"
 
 export const JoinHouseholdPage = () => {
   const navigate = useNavigate()

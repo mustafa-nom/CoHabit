@@ -9,6 +9,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { ArrowLeft, Home, Check, Copy } from "lucide-react"
 import { toast } from "sonner"
 import { householdService } from "@/services/household"
+import { Link } from "react-router-dom"
 
 export const CreateHouseholdPage = () => {
   const navigate = useNavigate()
