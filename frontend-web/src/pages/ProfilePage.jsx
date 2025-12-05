@@ -4,11 +4,11 @@ import { Container } from "@/components/layout/Container"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { authService } from "@/services/auth"
 import { ChevronLeft } from "lucide-react"
 import { toast } from "sonner"
+import { Link } from "react-router-dom"
 
 export const ProfilePage = () => {
   const navigate = useNavigate()
@@ -45,6 +45,10 @@ export const ProfilePage = () => {
     // Add validation and API calls here
     toast.success('Changes saved successfully!')
     setView('main')
+  }
+
+  const goToHousehold = () => {
+    navigate('/household');
   }
 
   if (view === 'changeName') {
@@ -173,39 +177,61 @@ export const ProfilePage = () => {
   }
 
   return (
-    <Container>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-mint">Profile Page</h1>
-
-        <div className="max-w-md space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">{user.displayName}</h2>
-            <p className="text-foreground-muted">
-              <span className="font-medium">Username:</span> {user.username}
-            </p>
+    <>
+      <header className="border-b border-mint bg-background-secondary">
+          <div className="flex container mx-auto px-4">
+              <div className="w-1/14 flex h-16 items-center justify-center-safe">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2"> CoHabit </div>
+              </div>
+              <div className="w-13/14 flex h-16 items-center justify-around">
+                  <Link to="/household">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Households </div>
+                  </Link>
+                  <Link to="/tasks">
+                    <div className="text-2xl font-bold text-white flex items-center gap-2"> Tasks </div>
+                  </Link>
+                  <Link to="/profile">
+                    <div className="text-2xl font-bold text-mint flex items-center gap-2 justify-center"> Profile </div>
+                  </Link>
+              </div>
           </div>
+      </header>
 
-          <Separator className="bg-mint/20" />
+      <Container>
+        <div className="space-y-6">
+          
+          <h1 className="text-3xl font-bold text-mint">Profile Page</h1>
 
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full" onClick={() => setView('changeName')}>
-              Change Display Name
-            </Button>
-            <Button variant="outline" className="w-full" onClick={() => setView('changeUsername')}>
-              Change Username
-            </Button>
-            <Button variant="outline" className="w-full" onClick={() => setView('changePassword')}>
-              Change Password
+          <div className="max-w-md space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold text-foreground">{user.displayName}</h2>
+              <p className="text-foreground-muted">
+                <span className="font-medium">Username:</span> {user.username}
+              </p>
+            </div>
+
+            <Separator className="bg-mint/20" />
+
+            <div className="space-y-3">
+              <Button variant="outline" className="w-full" onClick={() => setView('changeName')}>
+                Change Display Name
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => setView('changeUsername')}>
+                Change Username
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => setView('changePassword')}>
+                Change Password
+              </Button>
+            </div>
+
+            <Separator className="bg-mint/20" />
+
+            <Button variant="outline" className="w-full" onClick={handleLogout}>
+              Log Out
             </Button>
           </div>
-
-          <Separator className="bg-mint/20" />
-
-          <Button variant="outline" className="w-full" onClick={handleLogout}>
-            Log Out
-          </Button>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </>
   )
 }
