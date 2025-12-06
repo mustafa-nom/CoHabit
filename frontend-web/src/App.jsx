@@ -11,11 +11,13 @@ import { JoinHouseholdPage } from "@/pages/JoinHouseholdPage"
 import { ProfilePage } from "@/pages/ProfilePage"
 import { LoginPage } from "@/pages/LoginPage"
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute"
+import { UserProvider } from "@/contexts/UserContext"
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-background text-foreground">
+    <UserProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-background text-foreground">
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -48,6 +50,7 @@ function App() {
         <Toaster position="top-center" richColors theme="dark" />
       </div>
     </BrowserRouter>
+    </UserProvider>
   )
 }
 

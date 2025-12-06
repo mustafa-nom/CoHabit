@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { authService } from "@/services/auth"
+import { useUser } from "@/contexts/UserContext"
 import { Menu } from "lucide-react"
 
 export const LoginPage = () => {
   const navigate = useNavigate()
+  const { updateUser } = useUser()
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -23,17 +25,28 @@ export const LoginPage = () => {
     setLoading(true)
 
     try {
+      let response;
       if (isLogin) {
-        await authService.login(formData.username, formData.password)
+        response = await authService.login(formData.username, formData.password)
         toast.success('Login successful!')
       } else {
-        await authService.register({
+        response = await authService.register({
           username: formData.username,
           password: formData.password,
           displayName: formData.displayName,
         })
         toast.success('Account created successfully!')
       }
+
+      // Update user context with response data
+      if (response?.data) {
+        updateUser({
+          id: response.data.userId,
+          username: response.data.username,
+          displayName: response.data.displayName
+        })
+      }
+
       navigate('/')
     } catch (error) {
       toast.error(isLogin ? 'Login failed' : 'Registration failed', {

@@ -72,6 +72,28 @@ export const userService = {
   },
 };
 
+export const profileService = {
+  getCurrentUser: async () => {
+    const response = await api.get('/profile/me');
+    return response.data;
+  },
+  updateDisplayName: async (newDisplayName) => {
+    const response = await api.put('/profile/display-name', { newDisplayName });
+    return response.data;
+  },
+  updateUsername: async (newUsername) => {
+    const response = await api.put('/profile/username', { newUsername });
+    return response.data;
+  },
+  updatePassword: async (currentPassword, newPassword) => {
+    const response = await api.post('/profile/change-password', {
+      currentPassword,
+      newPassword
+    });
+    return response.data;
+  },
+};
+
 export const healthCheck = async () => {
   const response = await api.get('/health');
   return response.data;
