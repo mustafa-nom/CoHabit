@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import { Plus, Calendar, Users, RotateCcw, Clock } from "lucide-react"
+import { Plus, Calendar, Users, RotateCcw, Clock, ChevronDown } from "lucide-react"
 import { cn } from "@/utils/cn"
 import { taskService } from "@/services/task"
 import { toast } from "sonner"
@@ -14,49 +14,61 @@ export const TasksPage = () => {
   const navigate = useNavigate()
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
-  const [weekInfo, setWeekInfo] = useState({ start: '', end: '', resetTime: '' })
+  const [selectedWeekOffset, setSelectedWeekOffset] = useState(0) // 0 = current week, 1 = next week, etc.
+  const [weekInfo, setWeekInfo] = useState({ start: '', end: '', resetTime: '', startDate: null, endDate: null })
 
   useEffect(() => {
     fetchTasks()
-    calculateWeekInfo()
+    calculateWeekInfo(selectedWeekOffset)
 
-    // Update reset time every minute
+    // Update reset time every minute (only for current week)
     const interval = setInterval(() => {
-      calculateWeekInfo()
+      if (selectedWeekOffset === 0) {
+        calculateWeekInfo(0)
+      }
     }, 60000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedWeekOffset])
 
-  const calculateWeekInfo = () => {
+  const calculateWeekInfo = (weekOffset = 0) => {
     const now = new Date()
     const dayOfWeek = now.getDay() // 0 = Sunday, 1 = Monday, etc.
 
-    // Calculate the most recent Sunday
+    // Calculate the target week's Sunday
     const weekStart = new Date(now)
-    weekStart.setDate(now.getDate() - dayOfWeek)
+    weekStart.setDate(now.getDate() - dayOfWeek + (weekOffset * 7))
     weekStart.setHours(0, 0, 0, 0)
 
-    // Calculate next Saturday
+    // Calculate the target week's Saturday
     const weekEnd = new Date(weekStart)
     weekEnd.setDate(weekStart.getDate() + 6)
     weekEnd.setHours(23, 59, 59, 999)
 
-    // Calculate next Sunday (reset time)
-    const nextReset = new Date(weekStart)
-    nextReset.setDate(weekStart.getDate() + 7)
-    nextReset.setHours(0, 0, 0, 0)
+    // Calculate time until current week reset (only for current week)
+    let resetTime = ''
+    if (weekOffset === 0) {
+      const nextReset = new Date(weekStart)
+      nextReset.setDate(weekStart.getDate() + 7)
+      nextReset.setHours(0, 0, 0, 0)
 
-    // Calculate time until reset
-    const timeDiff = nextReset - now
-    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
-    const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const timeDiff = nextReset - now
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      resetTime = `${days}d ${hours}h`
+    }
 
     setWeekInfo({
       start: weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       end: weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      resetTime: `${days}d ${hours}h`
+      resetTime,
+      startDate: weekStart,
+      endDate: weekEnd
     })
+  }
+
+  const handleWeekChange = (offset) => {
+    setSelectedWeekOffset(offset)
   }
 
   const fetchTasks = async () => {
@@ -88,27 +100,48 @@ export const TasksPage = () => {
   }
 
   const getTaskCategory = (task) => {
-    if (!task.dueDate) return 'Anytime'
+    if (!task.dueDate) {
+      // Anytime tasks show in all weeks
+      return 'Anytime'
+    }
 
     const dueDate = new Date(task.dueDate)
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-
-    // Reset time parts for comparison
-    today.setHours(0, 0, 0, 0)
-    tomorrow.setHours(0, 0, 0, 0)
     dueDate.setHours(0, 0, 0, 0)
 
-    if (dueDate <= today) return 'Today'
-    if (dueDate <= tomorrow) return 'Tomorrow'
-    return 'Upcoming'
+    // Check if task is within selected week range
+    const taskInSelectedWeek = dueDate >= weekInfo.startDate && dueDate <= weekInfo.endDate
+
+    if (!taskInSelectedWeek) {
+      return null // Don't show tasks outside selected week
+    }
+
+    // For current week (offset 0), use Today/Tomorrow/This Week categories
+    if (selectedWeekOffset === 0) {
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      today.setHours(0, 0, 0, 0)
+      tomorrow.setHours(0, 0, 0, 0)
+
+      if (dueDate.getTime() === today.getTime()) return 'Today'
+      if (dueDate.getTime() === tomorrow.getTime()) return 'Tomorrow'
+      return 'This Week'
+    }
+
+    // For future weeks, just show "This Week"
+    return 'This Week'
   }
 
-  const todayTasks = tasks.filter(t => getTaskCategory(t) === 'Today')
-  const tomorrowTasks = tasks.filter(t => getTaskCategory(t) === 'Tomorrow')
-  const upcomingTasks = tasks.filter(t => getTaskCategory(t) === 'Upcoming')
-  const anytimeTasks = tasks.filter(t => getTaskCategory(t) === 'Anytime')
+  const filteredTasks = tasks.filter(t => {
+    const category = getTaskCategory(t)
+    return category !== null // Only include tasks with a valid category
+  })
+
+  const todayTasks = filteredTasks.filter(t => getTaskCategory(t) === 'Today')
+  const tomorrowTasks = filteredTasks.filter(t => getTaskCategory(t) === 'Tomorrow')
+  const thisWeekTasks = filteredTasks.filter(t => getTaskCategory(t) === 'This Week')
+  const anytimeTasks = filteredTasks.filter(t => getTaskCategory(t) === 'Anytime')
 
   if (loading) {
     return (
@@ -119,6 +152,27 @@ export const TasksPage = () => {
       </Container>
     )
   }
+
+  const weekOptions = [
+    { value: 0, label: 'This Week', sublabel: weekInfo.start && weekInfo.end ? `${weekInfo.start} - ${weekInfo.end}` : '' },
+    { value: 1, label: 'Next Week', sublabel: '' },
+    { value: 2, label: 'In 2 Weeks', sublabel: '' },
+    { value: 3, label: 'In 3 Weeks', sublabel: '' },
+    { value: 4, label: 'In 4 Weeks', sublabel: '' },
+  ]
+
+  // Calculate sublabels for future weeks
+  weekOptions.forEach((option, index) => {
+    if (index > 0) {
+      const now = new Date()
+      const dayOfWeek = now.getDay()
+      const weekStart = new Date(now)
+      weekStart.setDate(now.getDate() - dayOfWeek + (option.value * 7))
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6)
+      option.sublabel = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+    }
+  })
 
   return (
     <Container>
@@ -135,19 +189,31 @@ export const TasksPage = () => {
           </Button>
         </div>
 
-        {/* Week Info */}
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-mint">
-            <Calendar className="h-4 w-4" />
-            <span>Week of {weekInfo.start} - {weekInfo.end}</span>
+        {/* Week Selector */}
+        <div className="space-y-2">
+          <div className="relative inline-flex items-center">
+            <select
+              value={selectedWeekOffset}
+              onChange={(e) => handleWeekChange(Number(e.target.value))}
+              className="pr-5 py-1 bg-transparent text-foreground-muted text-sm appearance-none cursor-pointer focus:outline-none focus:text-foreground"
+            >
+              {weekOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label} ({option.sublabel})
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted pointer-events-none" />
           </div>
-          <div className="text-foreground-muted">
-            Resets in {weekInfo.resetTime}
-          </div>
+          {selectedWeekOffset === 0 && weekInfo.resetTime && (
+            <div className="text-sm text-foreground-muted text-right">
+              Resets in {weekInfo.resetTime}
+            </div>
+          )}
         </div>
 
         {/* Empty State */}
-        {tasks.length === 0 && (
+        {filteredTasks.length === 0 && (
           <Card className="p-8 text-center bg-background-secondary border-border-muted">
             <div className="space-y-4">
               <div className="mx-auto w-16 h-16 rounded-full bg-mint/10 flex items-center justify-center">
@@ -196,12 +262,15 @@ export const TasksPage = () => {
           </div>
         )}
 
-        {/* Upcoming Section */}
-        {upcomingTasks.length > 0 && (
+        {/* This Week Section */}
+        {thisWeekTasks.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-foreground">Upcoming</h2>
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-mint" />
+              This Week
+            </h2>
             <div className="space-y-3">
-              {upcomingTasks.map((task) => (
+              {thisWeekTasks.map((task) => (
                 <TaskCard key={task.id} task={task} onToggle={toggleTask} />
               ))}
             </div>
