@@ -330,7 +330,7 @@ export const ProfilePage = () => {
 
         <div className="max-w-md space-y-6">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">{user.displayName || 'No display name'}</h2>
+            <h2 className="text-2xl font-bold text-foreground">{user.displayName || user.username}</h2>
             <p className="text-foreground-muted">
               <span className="font-medium">Username:</span> {user.username}
             </p>
