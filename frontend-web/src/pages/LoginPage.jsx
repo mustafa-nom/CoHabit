@@ -35,7 +35,7 @@ export const LoginPage = () => {
         })
         toast.success('Account created successfully!')
       }
-      navigate('/')
+      navigate('/household')
     } catch (error) {
       toast.error(isLogin ? 'Login failed' : 'Registration failed', {
         description: 'Please check your credentials and try again'
