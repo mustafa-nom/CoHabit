@@ -20,6 +20,18 @@ public class TaskController {
     private final JwtUtil jwtUtil;
 
     /**
+     * Get all tasks for current user's household
+     * GET /tasks
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<TaskResponse>>> getAllTasks(
+            HttpServletRequest httpRequest) {
+        Long userId = getUserIdFromRequest(httpRequest);
+        java.util.List<TaskResponse> tasks = taskService.getAllTasksForUserHousehold(userId);
+        return ResponseEntity.ok(ApiResponse.success("Tasks retrieved successfully", tasks));
+    }
+
+    /**
      * Create a new task
      * POST /tasks
      */

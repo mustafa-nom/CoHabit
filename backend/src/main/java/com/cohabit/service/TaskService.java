@@ -24,6 +24,28 @@ public class TaskService {
     private final HouseholdMemberRepository householdMemberRepository;
     private final HouseholdRepository householdRepository;
 
+    @Transactional(readOnly = true)
+    public List<TaskResponse> getAllTasksForUserHousehold(Long userId) {
+        // Step 1: Validate user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // Step 2: Get user's household
+        HouseholdMember membership = householdMemberRepository.findByUser(user)
+                .orElseThrow(() -> new NotInHouseholdException(
+                        "You must be in a household to view tasks"));
+
+        Household household = membership.getHousehold();
+
+        // Step 3: Get all tasks for the household
+        List<Task> tasks = taskRepository.findByHousehold(household);
+
+        // Step 4: Build response for each task
+        return tasks.stream()
+                .map(this::buildTaskResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public TaskResponse createTask(CreateTaskRequest request, Long userId) {
         // Step 1: Validate user exists
