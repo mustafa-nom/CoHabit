@@ -48,3 +48,6 @@ dist/
 build/
 *.class
 
+# Claude Code Stuff
+PLAN.md
+
