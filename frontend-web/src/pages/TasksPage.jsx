@@ -396,11 +396,22 @@ const TaskCard = ({ task, onToggle, selectedWeekOffset, weekInfo }) => {
     const recurrence = task.recurrenceRule
 
     if (recurrence === 'DAILY') {
-      // For daily tasks, show today (or first day of selected week if not current week)
+      // For daily tasks, calculate today's occurrence maintaining original time
+      const today = new Date()
+      today.setHours(originalDueDate.getHours())
+      today.setMinutes(originalDueDate.getMinutes())
+      today.setSeconds(0)
+      today.setMilliseconds(0)
+
       if (selectedWeekOffset === 0) {
-        return new Date()
+        return today
       }
-      return new Date(weekInfo.startDate)
+
+      // For future weeks, show first day of that week
+      const weekStartOccurrence = new Date(weekInfo.startDate)
+      weekStartOccurrence.setHours(originalDueDate.getHours())
+      weekStartOccurrence.setMinutes(originalDueDate.getMinutes())
+      return weekStartOccurrence
     } else if (recurrence === 'WEEKLY') {
       // For weekly tasks, find the same day of week in the selected week
       const originalDay = originalDueDate.getDay() // 0 = Sunday, 6 = Saturday
