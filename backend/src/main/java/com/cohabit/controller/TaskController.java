@@ -45,6 +45,19 @@ public class TaskController {
     }
 
     /**
+     * Toggle task completion status
+     * POST /tasks/{id}/toggle
+     */
+    @PostMapping("/{id}/toggle")
+    public ResponseEntity<ApiResponse<TaskResponse>> toggleTaskCompletion(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+        Long userId = getUserIdFromRequest(httpRequest);
+        TaskResponse taskResponse = taskService.toggleTaskCompletion(id, userId);
+        return ResponseEntity.ok(ApiResponse.success("Task status updated successfully", taskResponse));
+    }
+
+    /**
      * Extract user ID from JWT token in request
      */
     private Long getUserIdFromRequest(HttpServletRequest request) {

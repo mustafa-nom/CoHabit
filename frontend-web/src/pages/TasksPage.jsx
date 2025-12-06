@@ -109,7 +109,16 @@ export const TasksPage = () => {
     dueDate.setHours(0, 0, 0, 0)
 
     // Check if task is within selected week range
-    const taskInSelectedWeek = dueDate >= weekInfo.startDate && dueDate <= weekInfo.endDate
+    let taskInSelectedWeek = dueDate >= weekInfo.startDate && dueDate <= weekInfo.endDate
+
+    // Handle recurring tasks - they should appear in future weeks too
+    if (!taskInSelectedWeek && task.recurrenceRule && task.recurrenceRule !== 'NONE') {
+      const isRecurring = shouldShowRecurringTask(task, weekInfo.startDate, weekInfo.endDate)
+      if (!isRecurring) {
+        return null // Don't show if not in range for this recurrence
+      }
+      taskInSelectedWeek = true
+    }
 
     if (!taskInSelectedWeek) {
       return null // Don't show tasks outside selected week
@@ -124,6 +133,16 @@ export const TasksPage = () => {
       today.setHours(0, 0, 0, 0)
       tomorrow.setHours(0, 0, 0, 0)
 
+      // For recurring tasks in current week, check if there's an occurrence today/tomorrow
+      if (task.recurrenceRule && task.recurrenceRule !== 'NONE') {
+        const occurrenceToday = getRecurringOccurrence(task, today)
+        const occurrenceTomorrow = getRecurringOccurrence(task, tomorrow)
+
+        if (occurrenceToday) return 'Today'
+        if (occurrenceTomorrow) return 'Tomorrow'
+        return 'This Week'
+      }
+
       if (dueDate.getTime() === today.getTime()) return 'Today'
       if (dueDate.getTime() === tomorrow.getTime()) return 'Tomorrow'
       return 'This Week'
@@ -131,6 +150,71 @@ export const TasksPage = () => {
 
     // For future weeks, just show "This Week"
     return 'This Week'
+  }
+
+  const shouldShowRecurringTask = (task, weekStart, weekEnd) => {
+    const dueDate = new Date(task.dueDate)
+    dueDate.setHours(0, 0, 0, 0)
+
+    // Don't show recurring tasks in weeks before their first occurrence
+    if (weekEnd < dueDate) {
+      return false
+    }
+
+    const recurrence = task.recurrenceRule
+
+    if (recurrence === 'DAILY') {
+      // Daily tasks show in all future weeks
+      return true
+    } else if (recurrence === 'WEEKLY') {
+      // Weekly tasks show in all future weeks
+      return true
+    } else if (recurrence === 'MONTHLY') {
+      // Monthly tasks show in weeks that contain the same day of month
+      const dueDateDay = dueDate.getDate()
+      const weekStartDay = weekStart.getDate()
+      const weekEndDay = weekEnd.getDate()
+
+      // Check if the due date day falls within this week's date range
+      // Handle month boundaries
+      if (weekStart.getMonth() === weekEnd.getMonth()) {
+        return dueDateDay >= weekStartDay && dueDateDay <= weekEndDay
+      } else {
+        // Week spans two months
+        return (dueDateDay >= weekStartDay) || (dueDateDay <= weekEndDay)
+      }
+    }
+
+    return false
+  }
+
+  const getRecurringOccurrence = (task, targetDate) => {
+    const dueDate = new Date(task.dueDate)
+    dueDate.setHours(0, 0, 0, 0)
+    const target = new Date(targetDate)
+    target.setHours(0, 0, 0, 0)
+
+    // Don't show occurrences before the original due date
+    if (target < dueDate) {
+      return false
+    }
+
+    const recurrence = task.recurrenceRule
+
+    if (recurrence === 'DAILY') {
+      // Daily task occurs every day after due date
+      return true
+    } else if (recurrence === 'WEEKLY') {
+      // Weekly task occurs on the same day of week
+      const dueDateDay = dueDate.getDay()
+      const targetDay = target.getDay()
+      return dueDateDay === targetDay
+    } else if (recurrence === 'MONTHLY') {
+      // Monthly task occurs on the same date of month
+      return dueDate.getDate() === target.getDate()
+    }
+
+    return false
   }
 
   const filteredTasks = tasks.filter(t => {
@@ -241,7 +325,7 @@ export const TasksPage = () => {
             </h2>
             <div className="space-y-3">
               {todayTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -256,7 +340,7 @@ export const TasksPage = () => {
             </h2>
             <div className="space-y-3">
               {tomorrowTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -271,7 +355,7 @@ export const TasksPage = () => {
             </h2>
             <div className="space-y-3">
               {thisWeekTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -283,7 +367,7 @@ export const TasksPage = () => {
             <h2 className="text-xl font-semibold text-foreground">Anytime</h2>
             <div className="space-y-3">
               {anytimeTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -294,20 +378,76 @@ export const TasksPage = () => {
 }
 
 // Task Card Component
-const TaskCard = ({ task, onToggle }) => {
+const TaskCard = ({ task, onToggle, selectedWeekOffset, weekInfo }) => {
   const isCompleted = task.status === 'COMPLETED' || task.status === 'VERIFIED'
 
-  const formatDueDate = (dateString) => {
-    if (!dateString) return null
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+  const getDisplayDueDate = (task) => {
+    if (!task.dueDate) return null
+
+    // Parse the ISO date string (backend sends in ISO format)
+    const originalDueDate = new Date(task.dueDate)
+
+    // If not recurring or in the original week, show original date
+    if (!task.recurrenceRule || task.recurrenceRule === 'NONE') {
+      return originalDueDate
+    }
+
+    // For recurring tasks, calculate the next occurrence in the selected week
+    const recurrence = task.recurrenceRule
+
+    if (recurrence === 'DAILY') {
+      // For daily tasks, show today (or first day of selected week if not current week)
+      if (selectedWeekOffset === 0) {
+        return new Date()
+      }
+      return new Date(weekInfo.startDate)
+    } else if (recurrence === 'WEEKLY') {
+      // For weekly tasks, find the same day of week in the selected week
+      const originalDay = originalDueDate.getDay() // 0 = Sunday, 6 = Saturday
+      const weekStart = new Date(weekInfo.startDate)
+
+      // Calculate the date for that day of week in the selected week
+      const nextOccurrence = new Date(weekStart)
+      nextOccurrence.setDate(weekStart.getDate() + originalDay)
+
+      // Preserve the original time
+      nextOccurrence.setHours(originalDueDate.getHours())
+      nextOccurrence.setMinutes(originalDueDate.getMinutes())
+
+      return nextOccurrence
+    } else if (recurrence === 'MONTHLY') {
+      // For monthly tasks, find the same date of month in the selected week's month
+      const targetMonth = weekInfo.startDate.getMonth()
+      const targetYear = weekInfo.startDate.getFullYear()
+      const originalDate = originalDueDate.getDate()
+
+      const nextOccurrence = new Date(targetYear, targetMonth, originalDate)
+      nextOccurrence.setHours(originalDueDate.getHours())
+      nextOccurrence.setMinutes(originalDueDate.getMinutes())
+
+      return nextOccurrence
+    }
+
+    return originalDueDate
+  }
+
+  const formatDueDate = (task) => {
+    const date = getDisplayDueDate(task)
+    if (!date) return null
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    })
   }
 
   return (
     <Card
       className={cn(
         "p-4 cursor-pointer transition-all hover:border-mint-light",
-        isCompleted && "opacity-60"
+        isCompleted && "bg-background-secondary/50"
       )}
       onClick={() => onToggle(task.id)}
     >
@@ -315,21 +455,27 @@ const TaskCard = ({ task, onToggle }) => {
         <div className="flex-1 space-y-2">
           {/* Title */}
           <h3 className={cn(
-            "text-lg font-bold text-foreground",
-            isCompleted && "line-through"
+            "text-lg font-bold",
+            isCompleted ? "line-through text-foreground-muted" : "text-foreground"
           )}>
             {task.title}
           </h3>
 
           {/* Description */}
           {task.description && (
-            <p className="text-sm text-foreground-muted">
+            <p className={cn(
+              "text-sm",
+              isCompleted ? "text-foreground-muted/70" : "text-foreground-muted"
+            )}>
               {task.description}
             </p>
           )}
 
           {/* Task Meta Info */}
-          <div className="flex flex-wrap items-center gap-3 text-sm">
+          <div className={cn(
+            "flex flex-wrap items-center gap-3 text-sm",
+            isCompleted && "opacity-70"
+          )}>
             {/* Assignees */}
             {task.assignees && task.assignees.length > 0 && (
               <div className="flex items-center gap-1 text-mint">
@@ -344,7 +490,7 @@ const TaskCard = ({ task, onToggle }) => {
             {task.dueDate && (
               <div className="flex items-center gap-1 text-foreground-muted">
                 <Calendar className="h-4 w-4" />
-                <span>{formatDueDate(task.dueDate)}</span>
+                <span>{formatDueDate(task)}</span>
               </div>
             )}
 
@@ -358,7 +504,10 @@ const TaskCard = ({ task, onToggle }) => {
           </div>
 
           {/* Badges */}
-          <div className="flex flex-wrap gap-2">
+          <div className={cn(
+            "flex flex-wrap gap-2",
+            isCompleted && "opacity-60"
+          )}>
             {task.recurrenceRule && task.recurrenceRule !== 'NONE' && (
               <Badge variant="default" className="bg-mint/20 text-mint border-mint/30">
                 <RotateCcw className="h-3 w-3 mr-1" />
@@ -371,7 +520,9 @@ const TaskCard = ({ task, onToggle }) => {
               </Badge>
             )}
             {task.status && task.status !== 'OPEN' && (
-              <Badge variant="default">
+              <Badge variant="default" className={cn(
+                isCompleted && "bg-mint/10 text-mint/80 border-mint/20"
+              )}>
                 {task.status}
               </Badge>
             )}

@@ -141,6 +141,44 @@ public class TaskService {
         return buildTaskResponse(savedTask);
     }
 
+    @Transactional
+    public TaskResponse toggleTaskCompletion(Long taskId, Long userId) {
+        // Step 1: Validate user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // Step 2: Validate task exists
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        // Step 3: Validate user is in the task's household
+        HouseholdMember membership = householdMemberRepository.findByUser(user)
+                .orElseThrow(() -> new NotInHouseholdException(
+                        "You must be in a household to toggle tasks"));
+
+        if (!task.getHousehold().getId().equals(membership.getHousehold().getId())) {
+            throw new NotInHouseholdException(
+                    "You can only toggle tasks in your household");
+        }
+
+        // Step 4: Toggle the status
+        // Only toggle between OPEN and COMPLETED
+        // Keep completed tasks visible if deadline hasn't passed
+        if (task.getStatus() == Task.TaskStatus.COMPLETED ||
+            task.getStatus() == Task.TaskStatus.VERIFIED) {
+            task.setStatus(Task.TaskStatus.OPEN);
+            log.info("Task {} marked as OPEN by user {}", taskId, userId);
+        } else {
+            task.setStatus(Task.TaskStatus.COMPLETED);
+            log.info("Task {} marked as COMPLETED by user {}", taskId, userId);
+        }
+
+        Task savedTask = taskRepository.save(task);
+
+        // Step 5: Return updated task response
+        return buildTaskResponse(savedTask);
+    }
+
     private TaskResponse buildTaskResponse(Task task) {
         // Eagerly load assignments with assignee details
         List<TaskAssignment> assignments = taskAssignmentRepository
