@@ -88,12 +88,25 @@ export const TasksPage = () => {
 
   const toggleTask = async (id) => {
     try {
-      await taskService.toggleTaskCompletion(id)
-      // Optimistically update UI
-      setTasks(tasks.map(task =>
-        task.id === id ? { ...task, status: task.status === 'COMPLETED' ? 'OPEN' : 'COMPLETED' } : task
-      ))
-      toast.success('Task updated')
+      const task = tasks.find(t => t.id === id)
+      const wasCompleted = task.status === 'COMPLETED'
+      
+      const response = await taskService.toggleTaskCompletion(id)
+      
+      // Update tasks list
+      if (response.success && response.data) {
+        setTasks(tasks.map(t =>
+          t.id === id ? response.data : t
+        ))
+        
+        // Show XP message
+        if (!wasCompleted) {
+          const xp = response.data.xpPoints || task.xpPoints || 20
+          toast.success(`Task completed! +${xp} XP earned 🎉`)
+        } else {
+          toast.success('Task reopened')
+        }
+      }
     } catch (error) {
       console.error('Failed to toggle task:', error)
     }
@@ -487,6 +500,13 @@ const TaskCard = ({ task, onToggle, selectedWeekOffset, weekInfo }) => {
             "flex flex-wrap items-center gap-3 text-sm",
             isCompleted && "opacity-70"
           )}>
+            {/* XP Points */}
+            {task.xpPoints && (
+              <div className="flex items-center gap-1 text-mint font-semibold">
+                <span>⭐ {task.xpPoints} XP</span>
+              </div>
+            )}
+
             {/* Assignees */}
             {task.assignees && task.assignees.length > 0 && (
               <div className="flex items-center gap-1 text-mint">

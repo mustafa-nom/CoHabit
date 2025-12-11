@@ -25,6 +25,8 @@ public class CreateTaskRequest {
 
     private String recurrenceRule = "NONE"; // NONE, DAILY, WEEKLY, MONTHLY, CUSTOM
 
+    private String difficulty = "MEDIUM"; // EASY, MEDIUM, HARD
+
     private List<Long> assigneeUserIds; // Optional, defaults to creator
 
     private Boolean rotateAssignments = false;

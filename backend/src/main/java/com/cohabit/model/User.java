@@ -47,4 +47,35 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    /**
+     * Calculate user level based on total XP
+     * Level formula: Level = floor(sqrt(totalXp / 100)) + 1
+     * 
+     * XP Thresholds:
+     * Level 1: 0-99 XP
+     * Level 2: 100-399 XP
+     * Level 3: 400-899 XP
+     * Level 4: 900-1599 XP
+     * Level 5: 1600-2499 XP
+     * etc.
+     */
+    public void updateLevel() {
+        if (totalXp == null || totalXp < 0) {
+            this.level = 1;
+            return;
+        }
+        this.level = (int) Math.floor(Math.sqrt(totalXp / 100.0)) + 1;
+    }
+
+    /**
+     * Add XP to user and recalculate level
+     */
+    public void addXp(int xp) {
+        if (this.totalXp == null) {
+            this.totalXp = 0;
+        }
+        this.totalXp += xp;
+        updateLevel();
+    }
 }

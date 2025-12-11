@@ -20,6 +20,7 @@ export const CreateTaskPage = () => {
     title: '',
     description: '',
     dueDate: '',
+    difficulty: 'MEDIUM',
     recurrenceRule: 'NONE',
     assigneeUserIds: [],
     rotateAssignments: false,
@@ -93,6 +94,7 @@ export const CreateTaskPage = () => {
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+        difficulty: formData.difficulty,
         recurrenceRule: formData.recurrenceRule,
         assigneeUserIds: formData.assigneeUserIds.length > 0 ? formData.assigneeUserIds : null,
         rotateAssignments: formData.rotateAssignments,
@@ -169,6 +171,24 @@ export const CreateTaskPage = () => {
                 rows={3}
                 className="w-full px-3 py-2 rounded-md bg-background border border-border-muted text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-mint/50 resize-none"
               />
+            </div>
+
+            {/* Difficulty */}
+            <div className="space-y-2">
+              <Label htmlFor="difficulty">
+                Difficulty <span className="text-foreground-muted text-xs">(affects XP reward)</span>
+              </Label>
+              <select
+                id="difficulty"
+                name="difficulty"
+                value={formData.difficulty}
+                onChange={handleChange}
+                className="w-full h-12 px-4 rounded-lg border-2 border-mint bg-background-secondary text-foreground focus:outline-none focus:ring-2 focus:ring-mint"
+              >
+                <option value="EASY">Easy (10 XP)</option>
+                <option value="MEDIUM">Medium (20 XP)</option>
+                <option value="HARD">Hard (30 XP)</option>
+              </select>
             </div>
 
             {/* Due Date */}

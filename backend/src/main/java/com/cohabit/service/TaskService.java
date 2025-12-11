@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +21,7 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final TaskAssignmentRepository taskAssignmentRepository;
+    private final TaskCompletionRepository taskCompletionRepository;
     private final UserRepository userRepository;
     private final HouseholdMemberRepository householdMemberRepository;
     private final HouseholdRepository householdRepository;
@@ -105,7 +107,12 @@ public class TaskService {
             }
         }
 
-        // Step 8: Create task entity
+        // Step 8: Validate and set difficulty with XP points
+        String difficulty = request.getDifficulty() != null ? 
+                request.getDifficulty().toUpperCase() : "MEDIUM";
+        int xpPoints = calculateXpFromDifficulty(difficulty);
+
+        // Step 9: Create task entity
         Task task = new Task();
         task.setHousehold(household);
         task.setTitle(request.getTitle());
@@ -117,14 +124,15 @@ public class TaskService {
         task.setEstimatedTime(request.getEstimatedTime());
         task.setCreatedBy(user);
         task.setStatus(Task.TaskStatus.OPEN);
-        task.setDifficulty("MEDIUM"); // Default for now
-        task.setXpPoints(20); // Default for now
+        task.setDifficulty(difficulty);
+        task.setXpPoints(xpPoints);
         task.setIsFreeForAll(false); // Not implementing this feature
 
         Task savedTask = taskRepository.save(task);
-        log.info("Created task {} for household {}", savedTask.getId(), household.getId());
+        log.info("Created task {} for household {} with {} XP", 
+                savedTask.getId(), household.getId(), xpPoints);
 
-        // Step 9: Create task assignment entities
+        // Step 10: Create task assignment entities
         for (Long assigneeId : assigneeIds) {
             User assigneeUser = userRepository.getReferenceById(assigneeId);
 
@@ -137,8 +145,19 @@ public class TaskService {
             log.info("Assigned task {} to user {}", savedTask.getId(), assigneeId);
         }
 
-        // Step 10: Build and return task response
+        // Step 11: Build and return task response
         return buildTaskResponse(savedTask);
+    }
+
+    /**
+     * Calculate XP points based on task difficulty
+     */
+    private int calculateXpFromDifficulty(String difficulty) {
+        return switch (difficulty.toUpperCase()) {
+            case "EASY" -> 10;
+            case "HARD" -> 30;
+            default -> 20; // MEDIUM
+        };
     }
 
     @Transactional
@@ -162,15 +181,45 @@ public class TaskService {
         }
 
         // Step 4: Toggle the status
-        // Only toggle between OPEN and COMPLETED
-        // Keep completed tasks visible if deadline hasn't passed
-        if (task.getStatus() == Task.TaskStatus.COMPLETED ||
-            task.getStatus() == Task.TaskStatus.VERIFIED) {
+        boolean wasCompleted = task.getStatus() == Task.TaskStatus.COMPLETED ||
+                               task.getStatus() == Task.TaskStatus.VERIFIED;
+        
+        if (wasCompleted) {
+            // UNCOMPLETING TASK - Remove XP
             task.setStatus(Task.TaskStatus.OPEN);
+            
+            // Find and remove task completion record
+            Optional<TaskCompletion> completion = taskCompletionRepository
+                    .findByTaskAndCompletedBy(task, user);
+            
+            if (completion.isPresent()) {
+                int xpToRemove = completion.get().getXpAwarded();
+                user.addXp(-xpToRemove); // Subtract XP
+                userRepository.save(user);
+                taskCompletionRepository.delete(completion.get());
+                log.info("Task {} unmarked, removed {} XP from user {}", 
+                        taskId, xpToRemove, userId);
+            }
+            
             log.info("Task {} marked as OPEN by user {}", taskId, userId);
         } else {
+            // COMPLETING TASK - Award XP
             task.setStatus(Task.TaskStatus.COMPLETED);
-            log.info("Task {} marked as COMPLETED by user {}", taskId, userId);
+            
+            // Create task completion record
+            TaskCompletion completion = new TaskCompletion();
+            completion.setTask(task);
+            completion.setCompletedBy(user);
+            completion.setXpAwarded(task.getXpPoints());
+            completion.setVerificationStatus("AUTO_APPROVED");
+            taskCompletionRepository.save(completion);
+            
+            // Award XP to user
+            user.addXp(task.getXpPoints());
+            userRepository.save(user);
+            
+            log.info("Task {} marked as COMPLETED by user {}, awarded {} XP (new total: {} XP, level {})", 
+                    taskId, userId, task.getXpPoints(), user.getTotalXp(), user.getLevel());
         }
 
         Task savedTask = taskRepository.save(task);
@@ -200,6 +249,8 @@ public class TaskService {
                 .householdName(task.getHousehold().getName())
                 .title(task.getTitle())
                 .description(task.getDescription())
+                .difficulty(task.getDifficulty())
+                .xpPoints(task.getXpPoints())
                 .status(task.getStatus().name())
                 .dueDate(task.getDueDate())
                 .recurrenceRule(task.getRecurrenceRule().name())

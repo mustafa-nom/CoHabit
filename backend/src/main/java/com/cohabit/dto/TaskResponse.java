@@ -18,6 +18,8 @@ public class TaskResponse {
     private String householdName;
     private String title;
     private String description;
+    private String difficulty; // EASY, MEDIUM, HARD
+    private Integer xpPoints; // XP reward for completing task
     private String status; // OPEN, ASSIGNED, etc.
     private LocalDateTime dueDate;
     private String recurrenceRule; // NONE, DAILY, WEEKLY, MONTHLY, CUSTOM
