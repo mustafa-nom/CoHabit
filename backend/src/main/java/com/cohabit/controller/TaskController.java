@@ -2,6 +2,7 @@ package com.cohabit.controller;
 
 import com.cohabit.dto.ApiResponse;
 import com.cohabit.dto.CreateTaskRequest;
+import com.cohabit.dto.UpdateTaskRequest;
 import com.cohabit.dto.TaskResponse;
 import com.cohabit.service.TaskService;
 import com.cohabit.util.JwtUtil;
@@ -55,6 +56,16 @@ public class TaskController {
         Long userId = getUserIdFromRequest(httpRequest);
         TaskResponse taskResponse = taskService.toggleTaskCompletion(id, userId);
         return ResponseEntity.ok(ApiResponse.success("Task status updated successfully", taskResponse));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<TaskResponse>> updateTask(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateTaskRequest request,
+            HttpServletRequest httpRequest) {
+        Long userId = getUserIdFromRequest(httpRequest);
+        TaskResponse taskResponse = taskService.updateTask(id, request, userId);
+        return ResponseEntity.ok(ApiResponse.success("Task updated successfully", taskResponse));
     }
 
     /**

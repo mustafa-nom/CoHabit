@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import { Plus, Calendar, Users, RotateCcw, Clock, ChevronDown } from "lucide-react"
+import { Plus, Calendar, Users, RotateCcw, Clock, ChevronDown, Pencil } from "lucide-react"
 import { cn } from "@/utils/cn"
 import { taskService } from "@/services/task"
 import { toast } from "sonner"
@@ -338,7 +338,7 @@ export const TasksPage = () => {
             </h2>
             <div className="space-y-3">
               {todayTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} onEdit={(id) => navigate(`/tasks/${id}/edit`)} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -353,7 +353,7 @@ export const TasksPage = () => {
             </h2>
             <div className="space-y-3">
               {tomorrowTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} onEdit={(id) => navigate(`/tasks/${id}/edit`)} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -368,7 +368,7 @@ export const TasksPage = () => {
             </h2>
             <div className="space-y-3">
               {thisWeekTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} onEdit={(id) => navigate(`/tasks/${id}/edit`)} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -380,7 +380,7 @@ export const TasksPage = () => {
             <h2 className="text-xl font-semibold text-foreground">Anytime</h2>
             <div className="space-y-3">
               {anytimeTasks.map((task) => (
-                <TaskCard key={task.id} task={task} onToggle={toggleTask} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
+                <TaskCard key={task.id} task={task} onToggle={toggleTask} onEdit={(id) => navigate(`/tasks/${id}/edit`)} selectedWeekOffset={selectedWeekOffset} weekInfo={weekInfo} />
               ))}
             </div>
           </div>
@@ -391,7 +391,7 @@ export const TasksPage = () => {
 }
 
 // Task Card Component
-const TaskCard = ({ task, onToggle, selectedWeekOffset, weekInfo }) => {
+const TaskCard = ({ task, onToggle, onEdit, selectedWeekOffset, weekInfo }) => {
   const isCompleted = task.status === 'COMPLETED' || task.status === 'VERIFIED'
 
   const getDisplayDueDate = (task) => {
@@ -560,18 +560,30 @@ const TaskCard = ({ task, onToggle, selectedWeekOffset, weekInfo }) => {
           </div>
         </div>
 
-        {/* Checkbox */}
-        <div className={cn(
-          "w-6 h-6 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-1",
-          isCompleted
-            ? "bg-mint border-mint"
-            : "border-mint"
-        )}>
-          {isCompleted && (
-            <svg className="w-4 h-4 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
+        <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(task.id)
+            }}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-foreground-muted hover:text-mint hover:bg-mint/10 transition-colors"
+            title="Edit task"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+
+          <div className={cn(
+            "w-6 h-6 rounded border-2 flex items-center justify-center transition-colors",
+            isCompleted
+              ? "bg-mint border-mint"
+              : "border-mint"
+          )}>
+            {isCompleted && (
+              <svg className="w-4 h-4 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
         </div>
       </div>
     </Card>

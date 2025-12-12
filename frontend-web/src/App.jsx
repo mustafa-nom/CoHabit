@@ -4,6 +4,7 @@ import { Header, BottomNav } from "@/components/layout/Header"
 import { HomePage } from "@/pages/HomePage"
 import { TasksPage } from "@/pages/TasksPage"
 import { CreateTaskPage } from "@/pages/CreateTaskPage"
+import { EditTaskPage } from "@/pages/EditTaskPage"
 import { LeaderboardPage } from "@/pages/LeaderboardPage"
 import { HouseholdPage } from "@/pages/HouseholdPage"
 import { CreateHouseholdPage } from "@/pages/CreateHouseholdPage"
@@ -34,6 +35,7 @@ function App() {
                       <Route path="/" element={<HomePage />} />
                       <Route path="/tasks" element={<TasksPage />} />
                       <Route path="/tasks/create" element={<CreateTaskPage />} />
+                      <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
                       <Route path="/leaderboard" element={<LeaderboardPage />} />
                       <Route path="/household" element={<HouseholdPage />} />
                       <Route path="/household/create" element={<CreateHouseholdPage />} />

@@ -1,6 +1,7 @@
 package com.cohabit.service;
 
 import com.cohabit.dto.CreateTaskRequest;
+import com.cohabit.dto.UpdateTaskRequest;
 import com.cohabit.dto.TaskResponse;
 import com.cohabit.exception.*;
 import com.cohabit.model.*;
@@ -158,6 +159,63 @@ public class TaskService {
             case "HARD" -> 30;
             default -> 20; // MEDIUM
         };
+    }
+
+    @Transactional
+    public TaskResponse updateTask(Long taskId, UpdateTaskRequest request, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        HouseholdMember membership = householdMemberRepository.findByUser(user)
+                .orElseThrow(() -> new NotInHouseholdException(
+                        "You must be in a household to edit tasks"));
+
+        if (!task.getHousehold().getId().equals(membership.getHousehold().getId())) {
+            throw new NotInHouseholdException(
+                    "You can only edit tasks in your household");
+        }
+
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            task.setTitle(request.getTitle());
+        }
+
+        if (request.getDescription() != null) {
+            task.setDescription(request.getDescription());
+        }
+
+        if (request.getDueDate() != null) {
+            task.setDueDate(request.getDueDate());
+        }
+
+        if (request.getRecurrenceRule() != null) {
+            try {
+                Task.RecurrenceRule recurrenceRule = Task.RecurrenceRule.valueOf(
+                        request.getRecurrenceRule().toUpperCase());
+                task.setRecurrenceRule(recurrenceRule);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                        "Invalid recurrence rule: " + request.getRecurrenceRule() +
+                        ". Must be one of: NONE, DAILY, WEEKLY, MONTHLY, CUSTOM");
+            }
+        }
+
+        if (request.getDifficulty() != null) {
+            String difficulty = request.getDifficulty().toUpperCase();
+            task.setDifficulty(difficulty);
+            task.setXpPoints(calculateXpFromDifficulty(difficulty));
+        }
+
+        if (request.getEstimatedTime() != null) {
+            task.setEstimatedTime(request.getEstimatedTime());
+        }
+
+        Task savedTask = taskRepository.save(task);
+        log.info("Updated task {} by user {}", taskId, userId);
+
+        return buildTaskResponse(savedTask);
     }
 
     @Transactional
