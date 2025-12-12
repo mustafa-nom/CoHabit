@@ -286,6 +286,48 @@ public class TaskService {
         return buildTaskResponse(savedTask);
     }
 
+    @Transactional
+    public void deleteTask(Long taskId, Long userId) {
+        // Step 1: Validate user exists
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // Step 2: Validate task exists
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+
+        // Step 3: Validate user is in the task's household
+        HouseholdMember membership = householdMemberRepository.findByUser(user)
+                .orElseThrow(() -> new NotInHouseholdException(
+                        "You must be in a household to delete tasks"));
+
+        if (!task.getHousehold().getId().equals(membership.getHousehold().getId())) {
+            throw new NotInHouseholdException(
+                    "You can only delete tasks in your household");
+        }
+
+        // Step 4: Delete all task completions (and remove XP from users)
+        List<TaskCompletion> completions = taskCompletionRepository.findByTask(task);
+        for (TaskCompletion completion : completions) {
+            User completedByUser = completion.getCompletedBy();
+            if (completedByUser != null && completion.getXpAwarded() != null) {
+                // Remove XP that was awarded for completing this task
+                completedByUser.addXp(-completion.getXpAwarded());
+                userRepository.save(completedByUser);
+                log.info("Removed {} XP from user {} due to task deletion", 
+                        completion.getXpAwarded(), completedByUser.getId());
+            }
+        }
+        taskCompletionRepository.deleteAll(completions);
+
+        // Step 5: Delete all task assignments (cascade should handle this, but being explicit)
+        taskAssignmentRepository.deleteByTask(task);
+
+        // Step 6: Delete the task itself
+        taskRepository.delete(task);
+        log.info("Deleted task {} by user {}", taskId, userId);
+    }
+
     private TaskResponse buildTaskResponse(Task task) {
         // Eagerly load assignments with assignee details
         List<TaskAssignment> assignments = taskAssignmentRepository

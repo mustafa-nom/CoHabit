@@ -25,6 +25,7 @@ export const LoginPage = () => {
     setLoading(true)
 
     try {
+      const targetPath = isLogin ? '/' : '/household'
       let response;
       if (isLogin) {
         response = await authService.login(formData.username, formData.password)
@@ -47,7 +48,7 @@ export const LoginPage = () => {
         })
       }
 
-      navigate('/')
+      navigate(targetPath)
     } catch (error) {
       toast.error(isLogin ? 'Login failed' : 'Registration failed', {
         description: 'Please check your credentials and try again'

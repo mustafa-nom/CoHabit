@@ -69,6 +69,19 @@ public class TaskController {
     }
 
     /**
+     * Delete a task
+     * DELETE /tasks/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteTask(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest) {
+        Long userId = getUserIdFromRequest(httpRequest);
+        taskService.deleteTask(id, userId);
+        return ResponseEntity.ok(ApiResponse.success("Task deleted successfully"));
+    }
+
+    /**
      * Extract user ID from JWT token in request
      */
     private Long getUserIdFromRequest(HttpServletRequest request) {
